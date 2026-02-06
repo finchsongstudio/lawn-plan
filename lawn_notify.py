@@ -2,8 +2,8 @@
 """
 KC Lawn Care Notification System
 
-Orchestrates soil temp fetching, trigger evaluation, and notifications.
-Features: soil temp projections, mark-as-done via ntfy, heads-up alerts.
+Orchestrates soil temp fetching, trigger evaluation, Google Sheets dashboard,
+and Gmail notifications.
 """
 
 import json
@@ -21,11 +21,10 @@ from lawn_care import (
     get_upcoming_applications,
     update_soil_temp_history,
     format_notification,
-    format_ready_notification,
-    format_heads_up_notification,
-    send_ready_notification,
-    send_heads_up_notification,
-    poll_done_topic,
+    read_done_checkboxes,
+    update_dashboard,
+    send_ready_email,
+    send_heads_up_email,
 )
 
 # Configure logging
@@ -36,9 +35,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def process_done_messages(config: dict, state: dict, schedule: dict, today: date) -> None:
-    """Poll ntfy done topic and mark completed apps in state."""
-    done_ids = poll_done_topic(config)
+def process_done_checkboxes(config: dict, state: dict, schedule: dict, today: date) -> None:
+    """Read Google Sheet checkboxes and mark completed apps in state."""
+    try:
+        done_ids = read_done_checkboxes(config)
+    except Exception as e:
+        logger.warning(f"Failed to read Sheet checkboxes: {e}")
+        return
+
     if not done_ids:
         return
 
@@ -49,22 +53,20 @@ def process_done_messages(config: dict, state: dict, schedule: dict, today: date
 
     for app_id in done_ids:
         if app_id not in valid_app_ids:
-            logger.warning(f"Unknown app_id from done topic: {app_id}")
+            logger.warning(f"Unknown app_id from Sheet checkbox: {app_id}")
             continue
         if app_id in completed:
-            logger.info(f"Already completed: {app_id}")
             continue
 
         completed[app_id] = today_str
-        # Clear sent_alerts entry when app is completed
         if app_id in sent_alerts:
             del sent_alerts[app_id]
-        logger.info(f"Marked done: {app_id}")
+        logger.info(f"Marked done via Sheet: {app_id}")
 
     save_state(state)
 
 
-def send_notifications(
+def send_email_notifications(
     upcoming: list[dict],
     config: dict,
     state: dict,
@@ -72,7 +74,7 @@ def send_notifications(
     projections: list[dict] | None,
     today: date,
 ) -> None:
-    """Send appropriate notifications for ready and heads-up apps."""
+    """Send Gmail notifications for ready and heads-up apps."""
     area_sqft = config.get("area_sqft")
     today_str = today.strftime("%Y-%m-%d")
     sent_alerts = state.setdefault("sent_alerts", {})
@@ -80,16 +82,17 @@ def send_notifications(
     ready_apps = [a for a in upcoming if a["ready"]]
     heads_up_apps = [a for a in upcoming if a.get("heads_up")]
 
-    # Send one notification per ready app (each with its own Mark Done button)
+    # Send one email per ready app
     for app in ready_apps:
-        message = format_ready_notification(app, soil_temp, area_sqft)
-        send_ready_notification(app, message, config)
+        if app["id"] not in sent_alerts:
+            if send_ready_email(app, soil_temp, area_sqft, config):
+                sent_alerts[app["id"]] = today_str
+                save_state(state)
 
-    # Send a single heads-up notification for all heads-up apps (skip already-alerted)
+    # Send a single heads-up email for all new heads-up apps
     new_heads_up = [a for a in heads_up_apps if a["id"] not in sent_alerts]
     if new_heads_up:
-        message = format_heads_up_notification(new_heads_up, soil_temp, projections, area_sqft)
-        if send_heads_up_notification(message, config):
+        if send_heads_up_email(new_heads_up, soil_temp, projections, area_sqft, config):
             for app in new_heads_up:
                 sent_alerts[app["id"]] = today_str
             save_state(state)
@@ -112,8 +115,8 @@ def main():
         logger.error(f"Invalid JSON: {e}")
         return 1
 
-    # Poll done topic before evaluating triggers
-    process_done_messages(config, state, schedule, today)
+    # Read Sheet checkboxes before evaluating triggers
+    process_done_checkboxes(config, state, schedule, today)
 
     # Fetch soil temperature
     soil_temp = fetch_soil_temp(config)
@@ -134,26 +137,34 @@ def main():
                     f"{projections[-1]['date']} {projections[-1]['projected_soil_temp']}F"
                 )
 
-    # Get upcoming applications
-    upcoming = get_upcoming_applications(schedule, state, soil_temp, today, projections=projections)
+    # Get ALL upcoming apps for dashboard (limit=0)
+    all_upcoming = get_upcoming_applications(schedule, state, soil_temp, today, limit=0, projections=projections)
 
-    if not upcoming:
+    if not all_upcoming:
         logger.info("No upcoming applications found")
         return 0
 
-    # Check counts
-    ready_apps = [a for a in upcoming if a["ready"]]
-    heads_up_apps = [a for a in upcoming if a.get("heads_up")]
+    # Update Google Sheets dashboard
+    try:
+        update_dashboard(config, schedule, state, all_upcoming, soil_temp, projections)
+    except Exception as e:
+        logger.error(f"Failed to update Sheet dashboard: {e}")
+
+    # Get top 5 for notification evaluation and console display
+    notify_upcoming = all_upcoming[:5]
+
+    ready_apps = [a for a in notify_upcoming if a["ready"]]
+    heads_up_apps = [a for a in notify_upcoming if a.get("heads_up")]
 
     # Format and display full summary to console
     area_sqft = config.get("area_sqft")
-    message = format_notification(upcoming, soil_temp, projections, area_sqft)
+    message = format_notification(notify_upcoming, soil_temp, projections, area_sqft)
     print("\n" + message + "\n")
 
-    # Send notifications if anything is actionable
+    # Send email notifications if anything is actionable
     if ready_apps or heads_up_apps:
         logger.info(f"{len(ready_apps)} ready, {len(heads_up_apps)} heads-up")
-        send_notifications(upcoming, config, state, soil_temp, projections, today)
+        send_email_notifications(notify_upcoming, config, state, soil_temp, projections, today)
     else:
         logger.info("No applications ready or approaching")
 

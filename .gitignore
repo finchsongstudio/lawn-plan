@@ -1,6 +1,10 @@
 # Runtime state (changes on each run)
 state.json
 
+# Google OAuth2 credentials
+credentials.json
+token.json
+
 # Logs
 *.log
 lawn_notify.log

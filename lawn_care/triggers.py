@@ -396,7 +396,7 @@ def get_upcoming_applications(
 
     upcoming.sort(key=sort_key)
 
-    return upcoming[:limit]
+    return upcoming[:limit] if limit else upcoming
 
 
 def update_soil_temp_history(
