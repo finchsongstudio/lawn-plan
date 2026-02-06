@@ -1,0 +1,11 @@
+{
+  "location": {
+    "zip": "64151",
+    "lat": 39.2,
+    "lng": -94.6
+  },
+  "ntfy_topic": "kc-lawn-care",
+  "soil_temp_source": "greencast",
+  "soil_temp_manual_f": null,
+  "alert_time": "07:00"
+}

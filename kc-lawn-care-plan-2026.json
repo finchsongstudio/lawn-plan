@@ -1,0 +1,834 @@
+{
+  "meta": {
+    "version": "1.0",
+    "season": 2026,
+    "zone": "6a",
+    "location": "Kansas City, MO",
+    "lawn_type": "Kentucky Bluegrass",
+    "area_sqft": null,
+    "notes": "All rates per 1,000 sq ft. Set area_sqft to calculate total product quantities.",
+    "nitrogen_budget_lbs_per_1000": { "min": 3.5, "max": 4.5 }
+  },
+
+  "trigger_types": {
+    "soil_temp": "Soil temperature at specified depth hits threshold for consecutive days",
+    "days_after": "Calendar days after a referenced application",
+    "calendar_window": "Fixed date range, adjusted by conditions",
+    "soil_temp_falling": "Soil temperature dropping through threshold"
+  },
+
+  "applications": [
+    {
+      "id": "round1_preemergent",
+      "name": "Pre-Emergent Split App 1",
+      "category": "pre_emergent",
+      "month_target": "March",
+      "trigger": {
+        "type": "soil_temp",
+        "threshold_f": 55,
+        "depth_inches": 4,
+        "direction": "rising",
+        "consecutive_days": 2
+      },
+      "kc_typical_window": { "start": "03-01", "end": "03-20" },
+      "alert_days_before": 3,
+      "products": [
+        {
+          "name": "Andersons Barricade",
+          "type": "granular",
+          "rate_per_1000sqft": "per label (split rate)",
+          "notes": "Gentler on KBG rhizomes than prodiamine"
+        }
+      ],
+      "conditions": {
+        "water_in_within_days": 14
+      },
+      "warnings": [
+        "Do NOT apply on a February warm spell. KC routinely gets a hard freeze late Feb/early March that resets soil temps.",
+        "Wait for 2 consecutive days at 55°F — one warm day is not enough."
+      ]
+    },
+    {
+      "id": "round1_fertilizer",
+      "name": "Spring Balanced Fertilizer",
+      "category": "fertilizer",
+      "month_target": "March",
+      "trigger": {
+        "type": "same_as",
+        "reference_id": "round1_preemergent",
+        "notes": "Apply same day as pre-emergent"
+      },
+      "products": [
+        {
+          "name": "Andersons Core 12-8-12",
+          "type": "granular",
+          "rate_per_1000sqft": "4 lbs product",
+          "n_lbs_per_1000": 0.48,
+          "notes": "Balanced P for spring root push"
+        }
+      ],
+      "conditions": {
+        "water_in": true
+      }
+    },
+    {
+      "id": "bio1_soil_amendment",
+      "name": "Spring Soil Health",
+      "category": "biostimulant",
+      "month_target": "March",
+      "trigger": {
+        "type": "same_as",
+        "reference_id": "round1_preemergent"
+      },
+      "products": [
+        {
+          "name": "Andersons Humic DG",
+          "type": "granular",
+          "rate_per_1000sqft": "4 lbs",
+          "notes": "Carbon + CEC improvement"
+        },
+        {
+          "name": "GCI N-Ext Air8",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 9,
+          "notes": "Compaction relief for KC clay"
+        }
+      ],
+      "spray_notes": {
+        "adjuvant": false,
+        "wait_before_watering_hours": 0,
+        "mow_before_days": 2,
+        "mow_after_days": 2
+      }
+    },
+    {
+      "id": "round2_fertilizer",
+      "name": "Spring N + Iron Push",
+      "category": "fertilizer",
+      "month_target": "April",
+      "trigger": {
+        "type": "days_after",
+        "reference_id": "round1_fertilizer",
+        "days_min": 30,
+        "days_max": 45
+      },
+      "kc_typical_window": { "start": "04-10", "end": "04-30" },
+      "alert_days_before": 5,
+      "products": [
+        {
+          "name": "Andersons DGL 25-0-0 + 6% Fe",
+          "type": "granular",
+          "rate_per_1000sqft": "2 lbs product",
+          "n_lbs_per_1000": 0.5,
+          "notes": "Quick-release N + iron for dark color"
+        }
+      ],
+      "conditions": {
+        "water_in": true
+      },
+      "warnings": [
+        "Iron STAINS CONCRETE. Sweep/blow off sidewalks and driveway before watering in.",
+        "Lysol removes iron stains from concrete."
+      ]
+    },
+    {
+      "id": "round2_postemergent",
+      "name": "Spring Post-Emergent (if needed)",
+      "category": "post_emergent",
+      "month_target": "April",
+      "trigger": {
+        "type": "same_as",
+        "reference_id": "round2_fertilizer",
+        "notes": "Apply same window, only if broadleaf weeds present"
+      },
+      "products": [
+        {
+          "name": "Andersons Surge 16-0-9",
+          "type": "granular",
+          "rate_per_1000sqft": "per label",
+          "notes": "Post-emergent + light fertilizer"
+        }
+      ],
+      "conditions": {
+        "air_temp_min_f": 60,
+        "air_temp_max_f": 85,
+        "skip_if_lawn_stressed": true
+      },
+      "warnings": [
+        "85°F hard cap. If April runs hot, spray early morning or wait for a cooler day.",
+        "Prime broadleaf window — KBG is actively growing and recovers well."
+      ]
+    },
+    {
+      "id": "bio2_rooting",
+      "name": "Spring Bio — Rooting + Humic",
+      "category": "biostimulant",
+      "month_target": "April",
+      "trigger": {
+        "type": "days_after",
+        "reference_id": "bio1_soil_amendment",
+        "days_min": 25,
+        "days_max": 35
+      },
+      "products": [
+        {
+          "name": "GCI N-Ext RGS",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 6,
+          "notes": "Rooting + heat/drought stress prep"
+        },
+        {
+          "name": "GCI N-Ext Humic12",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 9,
+          "notes": "Carbon source, nutrient efficiency"
+        },
+        {
+          "name": "Andersons Micronutrient Supplement OR GCI Microgreene",
+          "type": "granular_or_liquid",
+          "rate_per_1000sqft": "per label / 6 oz liquid",
+          "notes": "Color + density + stress tolerance"
+        }
+      ],
+      "spray_notes": {
+        "adjuvant": false,
+        "wait_before_watering_hours": 0,
+        "mow_before_days": 2,
+        "mow_after_days": 2
+      }
+    },
+    {
+      "id": "bio3_calcium",
+      "name": "Cal-Tide + Soil Amendments",
+      "category": "biostimulant",
+      "month_target": "May",
+      "trigger": {
+        "type": "days_after",
+        "reference_id": "bio2_rooting",
+        "days_min": 25,
+        "days_max": 35
+      },
+      "kc_typical_window": { "start": "05-01", "end": "05-15" },
+      "products": [
+        {
+          "name": "GCI Cal-Tide",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 8,
+          "notes": "Calcium loosens KC clay, strengthens cell walls"
+        },
+        {
+          "name": "Andersons BioChar DG",
+          "type": "granular",
+          "rate_per_1000sqft": "4 lbs",
+          "notes": "Carbon source for soil biology"
+        },
+        {
+          "name": "Andersons Hydra Charge",
+          "type": "granular",
+          "rate_per_1000sqft": "per label",
+          "notes": "Wetting agent — helps clay absorb irrigation"
+        }
+      ],
+      "spray_notes": {
+        "adjuvant": false,
+        "wait_before_watering_hours": 0
+      }
+    },
+    {
+      "id": "fungicide1",
+      "name": "Fungicide App 1 — Preventative",
+      "category": "fungicide",
+      "month_target": "May",
+      "trigger": {
+        "type": "soil_temp",
+        "threshold_f": 65,
+        "depth_inches": 4,
+        "direction": "rising",
+        "consecutive_days": 3,
+        "additional_condition": "Nighttime air temps consistently above 60°F"
+      },
+      "kc_typical_window": { "start": "05-10", "end": "05-20" },
+      "alert_days_before": 3,
+      "products": [
+        {
+          "name": "Azoxystrobin 2SC",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 0.38,
+          "rate_type": "preventative",
+          "curative_rate_oz": 0.77
+        },
+        {
+          "name": "Propiconazole 14.3%",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 1.0,
+          "rate_type": "preventative",
+          "curative_rate_oz": 2.0
+        }
+      ],
+      "conditions": {
+        "air_temp_max_f_for_propiconazole": 85,
+        "wait_before_watering_hours": 24,
+        "apply_before_disease_visible": true
+      },
+      "spray_notes": {
+        "adjuvant": true,
+        "adjuvant_product": "GCI Natural Adjuvant",
+        "adjuvant_rate_per_1000sqft_oz": 0.5,
+        "target_ph": 5.0,
+        "mixing_order": "water → product → check pH → citric acid if needed → adjuvant last → stir",
+        "mow_before_days": 2,
+        "mow_after_days": 2
+      },
+      "warnings": [
+        "Start BEFORE you see disease. Brown patch is easier to prevent than cure.",
+        "Do NOT water in for 24 hours — let it sit on leaf blades."
+      ]
+    },
+    {
+      "id": "round3_fertilizer",
+      "name": "Summer Growth Fertilizer",
+      "category": "fertilizer",
+      "month_target": "June",
+      "trigger": {
+        "type": "days_after",
+        "reference_id": "round2_fertilizer",
+        "days_min": 45,
+        "days_max": 60
+      },
+      "kc_typical_window": { "start": "06-01", "end": "06-15" },
+      "products": [
+        {
+          "name": "Andersons Core 24-6-12",
+          "type": "granular",
+          "rate_per_1000sqft": "4 lbs product",
+          "rate_reduced_heat": "3 lbs product",
+          "n_lbs_per_1000": 0.96,
+          "notes": "Higher N for active summer growth"
+        }
+      ],
+      "conditions": {
+        "water_in": true,
+        "reduce_rate_if_air_temp_above_f": 95,
+        "skip_if_extended_heat_dome": true
+      }
+    },
+    {
+      "id": "fungicide2",
+      "name": "Fungicide App 2",
+      "category": "fungicide",
+      "month_target": "June",
+      "trigger": {
+        "type": "days_after",
+        "reference_id": "fungicide1",
+        "days_min": 23,
+        "days_max": 25
+      },
+      "products": [
+        {
+          "name": "Azoxystrobin 2SC",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 0.38,
+          "rate_type": "preventative"
+        },
+        {
+          "name": "Propiconazole 14.3%",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 1.0,
+          "rate_type": "preventative",
+          "skip_if_air_temp_above_f": 85
+        }
+      ],
+      "conditions": {
+        "air_temp_max_f_for_propiconazole": 85,
+        "wait_before_watering_hours": 24
+      },
+      "spray_notes": {
+        "adjuvant": true,
+        "adjuvant_product": "GCI Natural Adjuvant",
+        "adjuvant_rate_per_1000sqft_oz": 0.5,
+        "target_ph": 5.0
+      }
+    },
+    {
+      "id": "bio4_humic",
+      "name": "Summer Bio — Humic",
+      "category": "biostimulant",
+      "month_target": "June",
+      "trigger": {
+        "type": "days_after",
+        "reference_id": "bio3_calcium",
+        "days_min": 25,
+        "days_max": 35
+      },
+      "products": [
+        {
+          "name": "GCI N-Ext Humic12",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 9,
+          "notes": "Continue monthly humic program"
+        }
+      ],
+      "spray_notes": {
+        "adjuvant": false
+      }
+    },
+    {
+      "id": "round4_iron",
+      "name": "Summer Iron / Color Push",
+      "category": "fertilizer",
+      "month_target": "July",
+      "trigger": {
+        "type": "calendar_window",
+        "window_start": "07-01",
+        "window_end": "07-15"
+      },
+      "alert_days_before": 3,
+      "products": [
+        {
+          "name": "Andersons Lean & Green 2-0-0 + Fe",
+          "type": "granular",
+          "rate_per_1000sqft": "per label",
+          "notes": "Color without N stress — SAFE in heat"
+        },
+        {
+          "name": "Andersons DGL 25-0-0 (optional alternative)",
+          "type": "granular",
+          "rate_per_1000sqft": "1 lb product",
+          "n_lbs_per_1000": 0.25,
+          "notes": "ONLY if temps under 90°F consistently"
+        }
+      ],
+      "conditions": {
+        "prefer_iron_only_if_air_temp_above_f": 90,
+        "skip_n_if_extended_heat_dome": true
+      },
+      "warnings": [
+        "If KC is in a 95°F+ heat dome, iron-only. Skip nitrogen entirely."
+      ]
+    },
+    {
+      "id": "grub_preventive",
+      "name": "Grub Prevention",
+      "category": "insecticide",
+      "month_target": "July",
+      "trigger": {
+        "type": "calendar_window",
+        "window_start": "07-01",
+        "window_end": "07-15",
+        "notes": "Can also use Acelepryn G in early April for season-long, or Imidacloprid May 1-15"
+      },
+      "products": [
+        {
+          "name": "Andersons GrubOut 17-0-3",
+          "type": "granular",
+          "rate_per_1000sqft": "per label",
+          "notes": "Preventive — Japanese beetles are real in KC"
+        }
+      ],
+      "conditions": {
+        "water_in_asap": true
+      }
+    },
+    {
+      "id": "fungicide3",
+      "name": "Fungicide App 3 — Azoxy Only",
+      "category": "fungicide",
+      "month_target": "July",
+      "trigger": {
+        "type": "days_after",
+        "reference_id": "fungicide2",
+        "days_min": 23,
+        "days_max": 25
+      },
+      "products": [
+        {
+          "name": "Azoxystrobin 2SC",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 0.38,
+          "rate_type": "preventative"
+        }
+      ],
+      "conditions": {
+        "no_propiconazole_reason": "July temps routinely exceed 85°F in KC",
+        "wait_before_watering_hours": 24
+      },
+      "spray_notes": {
+        "adjuvant": true,
+        "adjuvant_product": "GCI Natural Adjuvant",
+        "adjuvant_rate_per_1000sqft_oz": 0.5,
+        "target_ph": 5.0
+      },
+      "warnings": [
+        "DO NOT use Propiconazole above 85°F. Azoxy alone still gives 25-28 day brown patch control."
+      ]
+    },
+    {
+      "id": "bio5_humic",
+      "name": "Mid-Summer Bio — Humic",
+      "category": "biostimulant",
+      "month_target": "July",
+      "trigger": {
+        "type": "days_after",
+        "reference_id": "bio4_humic",
+        "days_min": 25,
+        "days_max": 35
+      },
+      "products": [
+        {
+          "name": "GCI N-Ext Humic12",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 9,
+          "notes": "Water in; time around rainfall"
+        }
+      ],
+      "spray_notes": {
+        "adjuvant": false
+      }
+    },
+    {
+      "id": "fungicide4",
+      "name": "Fungicide App 4 — Final Summer",
+      "category": "fungicide",
+      "month_target": "August",
+      "trigger": {
+        "type": "days_after",
+        "reference_id": "fungicide3",
+        "days_min": 23,
+        "days_max": 25
+      },
+      "products": [
+        {
+          "name": "Azoxystrobin 2SC",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 0.38,
+          "rate_type": "preventative"
+        },
+        {
+          "name": "GCI Microgreene",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 6,
+          "notes": "Micronutrients tank-mixed with fungicide"
+        },
+        {
+          "name": "GCI Five 0 Five 5-0-5",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 3,
+          "notes": "Light spoon-feed with fungicide"
+        }
+      ],
+      "conditions": {
+        "air_temp_max_f_for_propiconazole": 85,
+        "wait_before_watering_hours": 24,
+        "notes": "Add Propi back if air temps are under 85°F"
+      },
+      "spray_notes": {
+        "adjuvant": true,
+        "adjuvant_product": "GCI Natural Adjuvant",
+        "adjuvant_rate_per_1000sqft_oz": 0.5,
+        "target_ph": 5.0
+      }
+    },
+    {
+      "id": "august_iron",
+      "name": "Late Summer Iron",
+      "category": "fertilizer",
+      "month_target": "August",
+      "trigger": {
+        "type": "calendar_window",
+        "window_start": "08-01",
+        "window_end": "08-15"
+      },
+      "products": [
+        {
+          "name": "Andersons Lean & Green 2-0-0 + Fe",
+          "type": "granular",
+          "rate_per_1000sqft": "per label",
+          "notes": "Maintain color into September"
+        }
+      ],
+      "warnings": [
+        "Stop ALL herbicide applications at least 28 days before fall overseeding."
+      ]
+    },
+    {
+      "id": "fall_renovation",
+      "name": "Fall Aeration + Overseed",
+      "category": "renovation",
+      "month_target": "September",
+      "trigger": {
+        "type": "soil_temp_falling",
+        "threshold_f": 70,
+        "depth_inches": 4,
+        "direction": "falling",
+        "consecutive_days": 3
+      },
+      "kc_typical_window": { "start": "09-10", "end": "09-25" },
+      "alert_days_before": 7,
+      "products": [
+        {
+          "name": "Core Aeration",
+          "type": "mechanical",
+          "notes": "Water day before if ground is hard"
+        },
+        {
+          "name": "KBG Seed (Blue Heat or equiv.)",
+          "type": "seed",
+          "rate_per_1000sqft": "1-2 lbs",
+          "notes": "KBG germination: 14-21 days. Keep soil moist."
+        },
+        {
+          "name": "Andersons Core 12-8-12",
+          "type": "granular",
+          "rate_per_1000sqft": "4 lbs product",
+          "n_lbs_per_1000": 0.48,
+          "notes": "Starter fert — P for root development"
+        }
+      ],
+      "conditions": {
+        "skip_preemergent_if_overseeding": true,
+        "keep_soil_moist_days": 21
+      },
+      "flags": {
+        "blocks_fall_preemergent": true
+      }
+    },
+    {
+      "id": "bio6_fall_rooting",
+      "name": "Fall Bio — Rooting + Humic",
+      "category": "biostimulant",
+      "month_target": "September",
+      "trigger": {
+        "type": "same_as",
+        "reference_id": "fall_renovation",
+        "notes": "Apply same day as seeding"
+      },
+      "products": [
+        {
+          "name": "GCI N-Ext RGS",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 6,
+          "notes": "Rooting for new seedlings"
+        },
+        {
+          "name": "GCI N-Ext Humic12",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 9,
+          "notes": "Nutrient efficiency for establishing grass"
+        }
+      ],
+      "spray_notes": {
+        "adjuvant": false
+      }
+    },
+    {
+      "id": "round5_fall_fert",
+      "name": "Fall Fertility Push",
+      "category": "fertilizer",
+      "month_target": "October",
+      "trigger": {
+        "type": "days_after",
+        "reference_id": "fall_renovation",
+        "days_min": 28,
+        "days_max": 42,
+        "additional_condition": "New grass mowed at least 2x"
+      },
+      "kc_typical_window": { "start": "10-10", "end": "10-25" },
+      "alert_days_before": 5,
+      "products": [
+        {
+          "name": "Andersons DGL 25-0-0 + 6% Fe",
+          "type": "granular",
+          "rate_per_1000sqft": "2-3 lbs product",
+          "n_lbs_per_1000_range": [0.5, 0.75],
+          "notes": "Push new seedlings + established KBG"
+        }
+      ],
+      "conditions": {
+        "water_in": true,
+        "before_first_hard_frost": true
+      },
+      "warnings": [
+        "Iron stains concrete. Sweep before watering in."
+      ]
+    },
+    {
+      "id": "fall_preemergent",
+      "name": "Pre-Emergent Split App 2 (Poa annua)",
+      "category": "pre_emergent",
+      "month_target": "October",
+      "trigger": {
+        "type": "soil_temp_falling",
+        "threshold_f": 70,
+        "depth_inches": 4,
+        "direction": "falling",
+        "consecutive_days": 2
+      },
+      "kc_typical_window": { "start": "10-01", "end": "10-20" },
+      "products": [
+        {
+          "name": "Andersons Barricade",
+          "type": "granular",
+          "rate_per_1000sqft": "per label (split rate)"
+        }
+      ],
+      "conditions": {
+        "skip_if": "overseeded in September — pre-emergent kills new seedlings",
+        "water_in_within_days": 14
+      },
+      "flags": {
+        "blocked_by": "fall_renovation"
+      }
+    },
+    {
+      "id": "bio7_fall_calcium",
+      "name": "Fall Bio — Calcium",
+      "category": "biostimulant",
+      "month_target": "October",
+      "trigger": {
+        "type": "days_after",
+        "reference_id": "bio6_fall_rooting",
+        "days_min": 25,
+        "days_max": 35
+      },
+      "products": [
+        {
+          "name": "GCI Cal-Tide",
+          "type": "liquid",
+          "rate_per_1000sqft_oz": 8,
+          "notes": "Fall calcium for winter hardiness + clay loosening"
+        }
+      ],
+      "spray_notes": {
+        "adjuvant": false
+      }
+    },
+    {
+      "id": "round6_winterizer",
+      "name": "Winterizer",
+      "category": "fertilizer",
+      "month_target": "November",
+      "trigger": {
+        "type": "calendar_window",
+        "window_start": "11-01",
+        "window_end": "11-20",
+        "additional_condition": "Grass still green, growth slowed dramatically, before first hard frost"
+      },
+      "alert_days_before": 5,
+      "products": [
+        {
+          "name": "Andersons Core 12-8-12",
+          "type": "granular",
+          "rate_per_1000sqft": "4 lbs product",
+          "n_lbs_per_1000": 0.48,
+          "notes": "Balanced NPK for winter root storage"
+        }
+      ],
+      "conditions": {
+        "water_in_before_ground_freezes": true
+      },
+      "warnings": [
+        "Arguably the most important single application of the year. KBG stores late-fall N in roots for explosive spring green-up."
+      ]
+    },
+    {
+      "id": "round7_backup_winterizer",
+      "name": "Backup Winterizer (Optional)",
+      "category": "fertilizer",
+      "month_target": "December",
+      "trigger": {
+        "type": "calendar_window",
+        "window_start": "12-01",
+        "window_end": "12-15",
+        "additional_condition": "Color declining AND ground not frozen"
+      },
+      "optional": true,
+      "products": [
+        {
+          "name": "Andersons DGL 25-0-0",
+          "type": "granular",
+          "rate_per_1000sqft": "1-2 lbs product",
+          "n_lbs_per_1000_range": [0.25, 0.5]
+        }
+      ],
+      "conditions": {
+        "skip_if_ground_frozen": true
+      },
+      "warnings": [
+        "Most years you won't need this. If ground is frozen, N washes away — don't waste product."
+      ]
+    }
+  ],
+
+  "temperature_restrictions": {
+    "propiconazole_max_f": 85,
+    "surge_postemergent_min_f": 60,
+    "surge_postemergent_max_f": 85,
+    "triclopyr_max_f": 70,
+    "reduce_nitrogen_above_f": 95,
+    "skip_nitrogen_if_extended_heat_dome": true
+  },
+
+  "irrigation": {
+    "growing_season_inches_per_week": 1.0,
+    "method": "deep and infrequent",
+    "time_of_day": "early morning only",
+    "mowing_height_inches": { "spring": 2.5, "summer": 3.0, "pre_overseed_gradual_drop": true }
+  },
+
+  "curative_protocols": {
+    "brown_patch_curative": {
+      "products": [
+        { "name": "Azoxystrobin 2SC", "rate_per_1000sqft_oz": 0.77 },
+        { "name": "Propiconazole 14.3%", "rate_per_1000sqft_oz": 2.0, "max_air_temp_f": 85 }
+      ],
+      "interval_days": 14,
+      "notes": "Double preventative rates. Continue until symptoms stop spreading."
+    },
+    "grey_leaf_spot": {
+      "products": [
+        { "name": "Clearys 3336F", "rate_per_1000sqft_oz": 2.0 }
+      ],
+      "interval_days": 14,
+      "notes": "Every 14 days until cleared"
+    },
+    "pythium": {
+      "products": [
+        { "name": "Mefenoxam 2 AQ", "rate_per_1000sqft_oz_range": [0.49, 0.98] }
+      ],
+      "notes": "Prevention in hot/humid conditions"
+    },
+    "grub_curative": {
+      "products": [
+        { "name": "Dylox 6.2 Granular", "rate_per_1000sqft_lbs": 3.0 }
+      ],
+      "timing": "September when grubs at 1-3 inch depth",
+      "conditions": { "water_in_asap": true, "dig_to_confirm_depth_first": true }
+    }
+  },
+
+  "product_catalog": [
+    { "name": "Andersons Core 12-8-12", "analysis": "12-8-12", "type": "granular", "source": "andersons" },
+    { "name": "Andersons Core 24-6-12", "analysis": "24-6-12", "type": "granular", "source": "andersons" },
+    { "name": "Andersons DGL 25-0-0 + 6% Fe", "analysis": "25-0-0", "type": "granular", "source": "andersons", "stains_concrete": true },
+    { "name": "Andersons Lean & Green 2-0-0 + Fe", "analysis": "2-0-0", "type": "granular", "source": "andersons", "stains_concrete": true },
+    { "name": "Andersons Barricade", "analysis": "pre-emergent", "type": "granular", "source": "andersons" },
+    { "name": "Andersons Surge 16-0-9", "analysis": "16-0-9", "type": "granular", "source": "andersons" },
+    { "name": "Andersons GrubOut 17-0-3", "analysis": "insecticide", "type": "granular", "source": "andersons" },
+    { "name": "Andersons Humic DG", "analysis": "amendment", "type": "granular", "source": "andersons" },
+    { "name": "Andersons BioChar DG", "analysis": "amendment", "type": "granular", "source": "andersons" },
+    { "name": "Andersons Hydra Charge", "analysis": "wetting agent", "type": "granular", "source": "andersons" },
+    { "name": "Andersons Micronutrient Supplement", "analysis": "micros", "type": "granular", "source": "andersons" },
+    { "name": "GCI N-Ext Air8", "analysis": "biostimulant", "type": "liquid", "source": "gci" },
+    { "name": "GCI N-Ext RGS", "analysis": "biostimulant", "type": "liquid", "source": "gci" },
+    { "name": "GCI N-Ext Humic12", "analysis": "biostimulant", "type": "liquid", "source": "gci" },
+    { "name": "GCI Cal-Tide", "analysis": "biostimulant", "type": "liquid", "source": "gci" },
+    { "name": "GCI Microgreene", "analysis": "micronutrients", "type": "liquid", "source": "gci" },
+    { "name": "GCI Five 0 Five 5-0-5", "analysis": "5-0-5", "type": "liquid", "source": "gci" },
+    { "name": "GCI Natural Adjuvant", "analysis": "adjuvant", "type": "liquid", "source": "gci" },
+    { "name": "Azoxystrobin 2SC", "analysis": "fungicide", "type": "liquid", "source": "generic" },
+    { "name": "Propiconazole 14.3%", "analysis": "fungicide", "type": "liquid", "source": "generic" },
+    { "name": "Clearys 3336F", "analysis": "fungicide", "type": "liquid", "source": "generic" },
+    { "name": "Mefenoxam 2 AQ", "analysis": "fungicide", "type": "liquid", "source": "generic" },
+    { "name": "Dylox 6.2 Granular", "analysis": "insecticide", "type": "granular", "source": "generic" }
+  ]
+}
