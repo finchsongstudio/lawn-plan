@@ -45,7 +45,7 @@
       },
       "warnings": [
         "Do NOT apply on a February warm spell. KC routinely gets a hard freeze late Feb/early March that resets soil temps.",
-        "Wait for 2 consecutive days at 55°F — one warm day is not enough."
+        "Wait for 2 consecutive days at 55F --one warm day is not enough."
       ]
     },
     {
@@ -155,13 +155,13 @@
         "skip_if_lawn_stressed": true
       },
       "warnings": [
-        "85°F hard cap. If April runs hot, spray early morning or wait for a cooler day.",
-        "Prime broadleaf window — KBG is actively growing and recovers well."
+        "85F hard cap. If April runs hot, spray early morning or wait for a cooler day.",
+        "Prime broadleaf window --KBG is actively growing and recovers well."
       ]
     },
     {
       "id": "bio2_rooting",
-      "name": "Spring Bio — Rooting + Humic",
+      "name": "Spring Bio --Rooting + Humic",
       "category": "biostimulant",
       "month_target": "April",
       "trigger": {
@@ -226,7 +226,7 @@
           "name": "Andersons Hydra Charge",
           "type": "granular",
           "rate_per_1000sqft": "per label",
-          "notes": "Wetting agent — helps clay absorb irrigation"
+          "notes": "Wetting agent --helps clay absorb irrigation"
         }
       ],
       "spray_notes": {
@@ -236,7 +236,7 @@
     },
     {
       "id": "fungicide1",
-      "name": "Fungicide App 1 — Preventative",
+      "name": "Fungicide App 1 --Preventative",
       "category": "fungicide",
       "month_target": "May",
       "trigger": {
@@ -245,7 +245,7 @@
         "depth_inches": 4,
         "direction": "rising",
         "consecutive_days": 3,
-        "additional_condition": "Nighttime air temps consistently above 60°F"
+        "additional_condition": "Nighttime air temps consistently above 60F"
       },
       "kc_typical_window": { "start": "05-10", "end": "05-20" },
       "alert_days_before": 3,
@@ -275,13 +275,13 @@
         "adjuvant_product": "GCI Natural Adjuvant",
         "adjuvant_rate_per_1000sqft_oz": 0.5,
         "target_ph": 5.0,
-        "mixing_order": "water → product → check pH → citric acid if needed → adjuvant last → stir",
+        "mixing_order": "water >product >check pH >citric acid if needed >adjuvant last >stir",
         "mow_before_days": 2,
         "mow_after_days": 2
       },
       "warnings": [
         "Start BEFORE you see disease. Brown patch is easier to prevent than cure.",
-        "Do NOT water in for 24 hours — let it sit on leaf blades."
+        "Do NOT water in for 24 hours --let it sit on leaf blades."
       ]
     },
     {
@@ -351,7 +351,7 @@
     },
     {
       "id": "bio4_humic",
-      "name": "Summer Bio — Humic",
+      "name": "Summer Bio --Humic",
       "category": "biostimulant",
       "month_target": "June",
       "trigger": {
@@ -388,14 +388,14 @@
           "name": "Andersons Lean & Green 2-0-0 + Fe",
           "type": "granular",
           "rate_per_1000sqft": "per label",
-          "notes": "Color without N stress — SAFE in heat"
+          "notes": "Color without N stress --SAFE in heat"
         },
         {
           "name": "Andersons DGL 25-0-0 (optional alternative)",
           "type": "granular",
           "rate_per_1000sqft": "1 lb product",
           "n_lbs_per_1000": 0.25,
-          "notes": "ONLY if temps under 90°F consistently"
+          "notes": "ONLY if temps under 90F consistently"
         }
       ],
       "conditions": {
@@ -403,7 +403,7 @@
         "skip_n_if_extended_heat_dome": true
       },
       "warnings": [
-        "If KC is in a 95°F+ heat dome, iron-only. Skip nitrogen entirely."
+        "If KC is in a 95F+ heat dome, iron-only. Skip nitrogen entirely."
       ]
     },
     {
@@ -422,7 +422,7 @@
           "name": "Andersons GrubOut 17-0-3",
           "type": "granular",
           "rate_per_1000sqft": "per label",
-          "notes": "Preventive — Japanese beetles are real in KC"
+          "notes": "Preventive --Japanese beetles are real in KC"
         }
       ],
       "conditions": {
@@ -431,7 +431,7 @@
     },
     {
       "id": "fungicide3",
-      "name": "Fungicide App 3 — Azoxy Only",
+      "name": "Fungicide App 3 --Azoxy Only",
       "category": "fungicide",
       "month_target": "July",
       "trigger": {
@@ -449,7 +449,7 @@
         }
       ],
       "conditions": {
-        "no_propiconazole_reason": "July temps routinely exceed 85°F in KC",
+        "no_propiconazole_reason": "July temps routinely exceed 85F in KC",
         "wait_before_watering_hours": 24
       },
       "spray_notes": {
@@ -459,12 +459,12 @@
         "target_ph": 5.0
       },
       "warnings": [
-        "DO NOT use Propiconazole above 85°F. Azoxy alone still gives 25-28 day brown patch control."
+        "DO NOT use Propiconazole above 85F. Azoxy alone still gives 25-28 day brown patch control."
       ]
     },
     {
       "id": "bio5_humic",
-      "name": "Mid-Summer Bio — Humic",
+      "name": "Mid-Summer Bio --Humic",
       "category": "biostimulant",
       "month_target": "July",
       "trigger": {
@@ -487,7 +487,7 @@
     },
     {
       "id": "fungicide4",
-      "name": "Fungicide App 4 — Final Summer",
+      "name": "Fungicide App 4 --Final Summer",
       "category": "fungicide",
       "month_target": "August",
       "trigger": {
@@ -519,7 +519,7 @@
       "conditions": {
         "air_temp_max_f_for_propiconazole": 85,
         "wait_before_watering_hours": 24,
-        "notes": "Add Propi back if air temps are under 85°F"
+        "notes": "Add Propi back if air temps are under 85F"
       },
       "spray_notes": {
         "adjuvant": true,
@@ -581,7 +581,7 @@
           "type": "granular",
           "rate_per_1000sqft": "4 lbs product",
           "n_lbs_per_1000": 0.48,
-          "notes": "Starter fert — P for root development"
+          "notes": "Starter fert --P for root development"
         }
       ],
       "conditions": {
@@ -594,7 +594,7 @@
     },
     {
       "id": "bio6_fall_rooting",
-      "name": "Fall Bio — Rooting + Humic",
+      "name": "Fall Bio --Rooting + Humic",
       "category": "biostimulant",
       "month_target": "September",
       "trigger": {
@@ -672,7 +672,7 @@
         }
       ],
       "conditions": {
-        "skip_if": "overseeded in September — pre-emergent kills new seedlings",
+        "skip_if": "overseeded in September --pre-emergent kills new seedlings",
         "water_in_within_days": 14
       },
       "flags": {
@@ -681,7 +681,7 @@
     },
     {
       "id": "bio7_fall_calcium",
-      "name": "Fall Bio — Calcium",
+      "name": "Fall Bio --Calcium",
       "category": "biostimulant",
       "month_target": "October",
       "trigger": {
@@ -754,7 +754,7 @@
         "skip_if_ground_frozen": true
       },
       "warnings": [
-        "Most years you won't need this. If ground is frozen, N washes away — don't waste product."
+        "Most years you won't need this. If ground is frozen, N washes away --don't waste product."
       ]
     }
   ],

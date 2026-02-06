@@ -80,6 +80,7 @@ def evaluate_trigger(
 
     result = {
         "ready": False,
+        "heads_up": False,
         "projected_date": None,
         "reason": "",
         "window_start": None,
@@ -108,6 +109,14 @@ def evaluate_trigger(
 
     else:
         result["reason"] = f"Unknown trigger type: {trigger_type}"
+
+    # Evaluate heads_up: not ready, but projected_date is within alert_days_before
+    if not result["ready"] and result["projected_date"]:
+        alert_days = app.get("alert_days_before", 0)
+        if alert_days > 0:
+            days_until = (result["projected_date"] - today).days
+            if 0 < days_until <= alert_days:
+                result["heads_up"] = True
 
     return result
 
@@ -167,17 +176,17 @@ def _evaluate_soil_temp_rising(
     if consecutive >= consecutive_needed:
         result["ready"] = True
         result["projected_date"] = today
-        result["reason"] = f"Soil temp {soil_temp}°F (>={threshold}°F for {consecutive} days)"
+        result["reason"] = f"Soil temp {soil_temp}F (>={threshold}F for {consecutive} days)"
     else:
         reason = (
-            f"Soil temp {soil_temp}°F, need {consecutive_needed} consecutive days "
-            f"at >={threshold}°F (currently {consecutive})"
+            f"Soil temp {soil_temp}F, need {consecutive_needed} consecutive days "
+            f"at >={threshold}F (currently {consecutive})"
         )
         est = _estimate_threshold_date(projections, threshold, direction, consecutive_needed)
         if est:
             days_away = (est - today).days
             result["projected_date"] = est
-            reason += f" — forecast suggests ~{est.strftime('%b %d')} ({days_away}d)"
+            reason += f" --forecast suggests ~{est.strftime('%b %d')} ({days_away}d)"
         result["reason"] = reason
 
     return result
@@ -213,17 +222,17 @@ def _evaluate_soil_temp_falling(
     if consecutive >= consecutive_needed:
         result["ready"] = True
         result["projected_date"] = today
-        result["reason"] = f"Soil temp {soil_temp}°F (<={threshold}°F for {consecutive} days)"
+        result["reason"] = f"Soil temp {soil_temp}F (<={threshold}F for {consecutive} days)"
     else:
         reason = (
-            f"Soil temp {soil_temp}°F, need {consecutive_needed} consecutive days "
-            f"<={threshold}°F (currently {consecutive})"
+            f"Soil temp {soil_temp}F, need {consecutive_needed} consecutive days "
+            f"<={threshold}F (currently {consecutive})"
         )
         est = _estimate_threshold_date(projections, threshold, "falling", consecutive_needed)
         if est:
             days_away = (est - today).days
             result["projected_date"] = est
-            reason += f" — forecast suggests ~{est.strftime('%b %d')} ({days_away}d)"
+            reason += f" --forecast suggests ~{est.strftime('%b %d')} ({days_away}d)"
         result["reason"] = reason
 
     if "kc_typical_window" in app:
@@ -314,6 +323,7 @@ def _evaluate_same_as(
     # Recursively evaluate the reference app
     ref_result = evaluate_trigger(all_apps[ref_id], state, soil_temp, today, all_apps, projections)
     result["ready"] = ref_result["ready"]
+    result["heads_up"] = ref_result.get("heads_up", False)
     result["projected_date"] = ref_result["projected_date"]
     result["window_start"] = ref_result["window_start"]
     result["window_end"] = ref_result["window_end"]
@@ -363,6 +373,8 @@ def get_upcoming_applications(
             "category": app.get("category", "unknown"),
             "month_target": app.get("month_target", ""),
             "products": app.get("products", []),
+            "conditions": app.get("conditions", {}),
+            "spray_notes": app.get("spray_notes", {}),
             "warnings": app.get("warnings", []),
             "optional": app.get("optional", False),
             "schedule_order": idx,
@@ -371,11 +383,16 @@ def get_upcoming_applications(
 
         upcoming.append(entry)
 
-    # Sort by: ready first, then by projected date/window, then by schedule order
+    # Sort by: ready first, then heads_up, then coming up; by projected date; by schedule order
     def sort_key(x):
-        ready_sort = 0 if x["ready"] else 1
+        if x["ready"]:
+            tier = 0
+        elif x.get("heads_up"):
+            tier = 1
+        else:
+            tier = 2
         proj_date = x["projected_date"] or x["window_start"] or date(9999, 12, 31)
-        return (ready_sort, proj_date, x["schedule_order"])
+        return (tier, proj_date, x["schedule_order"])
 
     upcoming.sort(key=sort_key)
 

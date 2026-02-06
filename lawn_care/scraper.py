@@ -88,7 +88,7 @@ def fetch_soil_temp(config: dict[str, Any]) -> float | None:
             value = field.get("value")
             if value is not None and value != "n/a":
                 temp = float(value)
-                logger.info(f"ClearAg soil temp: {temp}°F (0-10cm avg)")
+                logger.info(f"ClearAg soil temp: {temp}F (0-10cm avg)")
                 return temp
 
         # Today might not be available yet; try yesterday
@@ -100,7 +100,7 @@ def fetch_soil_temp(config: dict[str, Any]) -> float | None:
             value = field.get("value")
             if value is not None and value != "n/a":
                 temp = float(value)
-                logger.info(f"ClearAg soil temp (yesterday): {temp}°F (0-10cm avg)")
+                logger.info(f"ClearAg soil temp (yesterday): {temp}F (0-10cm avg)")
                 return temp
 
     logger.warning("ClearAg fetch returned no usable data")
@@ -108,7 +108,7 @@ def fetch_soil_temp(config: dict[str, Any]) -> float | None:
     # Fallback to manual value
     manual_temp = config.get("soil_temp_manual_f")
     if manual_temp is not None:
-        logger.info(f"Using manual soil temp: {manual_temp}°F")
+        logger.info(f"Using manual soil temp: {manual_temp}F")
         return float(manual_temp)
 
     logger.warning("No soil temperature available")
@@ -206,7 +206,7 @@ def project_soil_temps(
     Uses an asymmetric exponential lag model calibrated against 1 year of
     ClearAg actuals for KC: soil responds quickly to warming (alpha=0.79)
     but slowly to cooling (alpha=0.15). This matches the physical behavior
-    of shallow soil — it absorbs heat fast but retains it.
+    of shallow soil --it absorbs heat fast but retains it.
 
     Expected accuracy (MAE from backtesting):
       1-day: ~2.6F | 7-day: ~4.6F | 13-day: ~5.0F
