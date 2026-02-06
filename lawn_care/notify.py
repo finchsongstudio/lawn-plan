@@ -8,12 +8,20 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-def format_notification(apps: list[dict[str, Any]], soil_temp: float | None) -> str:
+def format_notification(
+    apps: list[dict[str, Any]],
+    soil_temp: float | None,
+    projections: list[dict] | None = None,
+) -> str:
     """Format notification message for upcoming applications."""
     lines = []
 
     if soil_temp is not None:
         lines.append(f"Current soil temp (4\"): {soil_temp}°F")
+        if projections:
+            # Show a compact trend line
+            temps = [f"{p['projected_soil_temp']:.0f}" for p in projections[:7]]
+            lines.append(f"  7-day soil forecast: {' > '.join(temps)}F")
         lines.append("")
 
     ready_apps = [a for a in apps if a["ready"]]

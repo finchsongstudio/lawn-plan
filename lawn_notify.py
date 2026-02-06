@@ -15,6 +15,8 @@ from lawn_care import (
     load_state,
     save_state,
     fetch_soil_temp,
+    fetch_air_temp_forecast,
+    project_soil_temps,
     get_upcoming_applications,
     update_soil_temp_history,
     format_notification,
@@ -53,8 +55,20 @@ def main():
     update_soil_temp_history(state, soil_temp, today)
     save_state(state)
 
+    # Build soil temp projections from weather forecast
+    projections = None
+    if soil_temp is not None:
+        air_forecast = fetch_air_temp_forecast(config)
+        if air_forecast:
+            projections = project_soil_temps(soil_temp, air_forecast)
+            if projections:
+                logger.info(
+                    f"Projected soil temps: today {soil_temp}°F → "
+                    f"{projections[-1]['date']} {projections[-1]['projected_soil_temp']}°F"
+                )
+
     # Get upcoming applications
-    upcoming = get_upcoming_applications(schedule, state, soil_temp, today)
+    upcoming = get_upcoming_applications(schedule, state, soil_temp, today, projections=projections)
 
     if not upcoming:
         logger.info("No upcoming applications found")
@@ -64,7 +78,7 @@ def main():
     ready_apps = [a for a in upcoming if a["ready"]]
 
     # Format and display results
-    message = format_notification(upcoming, soil_temp)
+    message = format_notification(upcoming, soil_temp, projections)
     print("\n" + message + "\n")
 
     # Send notification if applications are ready

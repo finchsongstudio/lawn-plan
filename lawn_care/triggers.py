@@ -3,6 +3,9 @@
 from datetime import date, datetime, timedelta
 from typing import Any
 
+# Projection data is injected via evaluate_trigger's projections param
+# Format: list of {"date": "YYYY-MM-DD", "projected_soil_temp": float}
+
 
 def parse_date(date_str: str, year: int | None = None) -> date:
     """Parse a date string, handling MM-DD format by adding current year."""
@@ -52,9 +55,14 @@ def evaluate_trigger(
     soil_temp: float | None,
     today: date,
     all_apps: dict[str, dict],
+    projections: list[dict] | None = None,
 ) -> dict[str, Any]:
     """
     Evaluate if an application's trigger condition is met.
+
+    Args:
+        projections: Optional list of {"date": "YYYY-MM-DD", "projected_soil_temp": float}
+                     used to estimate when soil temp triggers will fire.
 
     Returns:
         {
@@ -84,10 +92,10 @@ def evaluate_trigger(
         return result
 
     if trigger_type == "soil_temp":
-        result = _evaluate_soil_temp_rising(app, trigger, history, soil_temp, today, result)
+        result = _evaluate_soil_temp_rising(app, trigger, history, soil_temp, today, result, projections)
 
     elif trigger_type == "soil_temp_falling":
-        result = _evaluate_soil_temp_falling(app, trigger, history, soil_temp, today, result)
+        result = _evaluate_soil_temp_falling(app, trigger, history, soil_temp, today, result, projections)
 
     elif trigger_type == "days_after":
         result = _evaluate_days_after(trigger, completed, today, result)
@@ -96,12 +104,39 @@ def evaluate_trigger(
         result = _evaluate_calendar_window(trigger, today, result)
 
     elif trigger_type == "same_as":
-        result = _evaluate_same_as(trigger, all_apps, state, soil_temp, today, result)
+        result = _evaluate_same_as(trigger, all_apps, state, soil_temp, today, result, projections)
 
     else:
         result["reason"] = f"Unknown trigger type: {trigger_type}"
 
     return result
+
+
+def _estimate_threshold_date(
+    projections: list[dict] | None,
+    threshold: float,
+    direction: str,
+    consecutive_needed: int,
+) -> date | None:
+    """
+    Scan projections to estimate when a soil temp threshold will be met
+    for the required number of consecutive days.
+    """
+    if not projections:
+        return None
+
+    run = 0
+    for p in projections:
+        temp = p["projected_soil_temp"]
+        if (direction == "rising" and temp >= threshold) or \
+           (direction == "falling" and temp <= threshold):
+            run += 1
+            if run >= consecutive_needed:
+                return datetime.strptime(p["date"], "%Y-%m-%d").date()
+        else:
+            run = 0
+
+    return None
 
 
 def _evaluate_soil_temp_rising(
@@ -111,6 +146,7 @@ def _evaluate_soil_temp_rising(
     soil_temp: float | None,
     today: date,
     result: dict,
+    projections: list[dict] | None = None,
 ) -> dict:
     """Evaluate soil_temp trigger (rising)."""
     threshold = trigger["threshold_f"]
@@ -133,10 +169,16 @@ def _evaluate_soil_temp_rising(
         result["projected_date"] = today
         result["reason"] = f"Soil temp {soil_temp}°F (>={threshold}°F for {consecutive} days)"
     else:
-        result["reason"] = (
+        reason = (
             f"Soil temp {soil_temp}°F, need {consecutive_needed} consecutive days "
-            f"at {'>=' if direction == 'rising' else '<='}{threshold}°F (currently {consecutive})"
+            f"at >={threshold}°F (currently {consecutive})"
         )
+        est = _estimate_threshold_date(projections, threshold, direction, consecutive_needed)
+        if est:
+            days_away = (est - today).days
+            result["projected_date"] = est
+            reason += f" — forecast suggests ~{est.strftime('%b %d')} ({days_away}d)"
+        result["reason"] = reason
 
     return result
 
@@ -148,6 +190,7 @@ def _evaluate_soil_temp_falling(
     soil_temp: float | None,
     today: date,
     result: dict,
+    projections: list[dict] | None = None,
 ) -> dict:
     """Evaluate soil_temp_falling trigger."""
     threshold = trigger["threshold_f"]
@@ -172,10 +215,16 @@ def _evaluate_soil_temp_falling(
         result["projected_date"] = today
         result["reason"] = f"Soil temp {soil_temp}°F (<={threshold}°F for {consecutive} days)"
     else:
-        result["reason"] = (
+        reason = (
             f"Soil temp {soil_temp}°F, need {consecutive_needed} consecutive days "
             f"<={threshold}°F (currently {consecutive})"
         )
+        est = _estimate_threshold_date(projections, threshold, "falling", consecutive_needed)
+        if est:
+            days_away = (est - today).days
+            result["projected_date"] = est
+            reason += f" — forecast suggests ~{est.strftime('%b %d')} ({days_away}d)"
+        result["reason"] = reason
 
     if "kc_typical_window" in app:
         result["window_start"] = parse_date(app["kc_typical_window"]["start"])
@@ -253,6 +302,7 @@ def _evaluate_same_as(
     soil_temp: float | None,
     today: date,
     result: dict,
+    projections: list[dict] | None = None,
 ) -> dict:
     """Evaluate same_as trigger."""
     ref_id = trigger["reference_id"]
@@ -262,7 +312,7 @@ def _evaluate_same_as(
         return result
 
     # Recursively evaluate the reference app
-    ref_result = evaluate_trigger(all_apps[ref_id], state, soil_temp, today, all_apps)
+    ref_result = evaluate_trigger(all_apps[ref_id], state, soil_temp, today, all_apps, projections)
     result["ready"] = ref_result["ready"]
     result["projected_date"] = ref_result["projected_date"]
     result["window_start"] = ref_result["window_start"]
@@ -278,9 +328,13 @@ def get_upcoming_applications(
     soil_temp: float | None,
     today: date,
     limit: int = 5,
+    projections: list[dict] | None = None,
 ) -> list[dict[str, Any]]:
     """
     Get list of upcoming applications sorted by readiness and projected date.
+
+    Args:
+        projections: Optional soil temp projections from forecast model.
 
     Returns list of dicts with app info and trigger evaluation results.
     """
@@ -300,7 +354,7 @@ def get_upcoming_applications(
             continue
 
         # Evaluate trigger
-        trigger_result = evaluate_trigger(app, state, soil_temp, today, all_apps)
+        trigger_result = evaluate_trigger(app, state, soil_temp, today, all_apps, projections)
 
         # Build result entry
         entry = {

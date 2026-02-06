@@ -5,7 +5,10 @@
     "lng": -94.6
   },
   "ntfy_topic": "kc-lawn-care",
-  "soil_temp_source": "greencast",
+  "clearag": {
+    "app_id": "a2f0d7a4",
+    "app_key": "742a069efe55c7015c2245032fb16bbb"
+  },
   "soil_temp_manual_f": null,
   "alert_time": "07:00"
 }
